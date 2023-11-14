@@ -1,0 +1,27 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1699895755978,
+      "tag": "0000_lying_risque",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1699897239870,
+      "tag": "0001_puzzling_namora",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1699898572335,
+      "tag": "0002_lovely_darkstar",
+      "breakpoints": true
+    }
+  ]
+}
