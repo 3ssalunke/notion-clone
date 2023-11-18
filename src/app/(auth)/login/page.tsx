@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import Loader from "@/components/global/loader";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -36,7 +37,14 @@ const LoginPage = () => {
   const onSubmit: SubmitHandler<z.infer<typeof FormSchema>> = async (
     formData
   ) => {
-    actionLoginUser(formData);
+    console.log("in");
+    const { error } = await actionLoginUser(formData);
+    if (error) {
+      form.reset();
+      setSubmitError(error.message);
+    }
+
+    router.replace("/dashboard");
   };
 
   return (
@@ -88,10 +96,10 @@ const LoginPage = () => {
           size="lg"
           disabled={isLoading}
         >
-          {isLoading ? "Login" : ""}
+          {!isLoading ? "Login" : <Loader />}
         </Button>
         <span className="self-container">
-          Dont have an account? <Link href="/signup">Sign up</Link>
+          Don&apos;t have an account? <Link href="/signup">Sign up</Link>
         </span>
       </form>
     </Form>
