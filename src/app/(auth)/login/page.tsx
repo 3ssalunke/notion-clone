@@ -4,12 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
-import { FormSchema } from "@/lib/types";
+import { loginFormSchema } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { actionLoginUser } from "@/lib/server-actions/auth-actions";
 import Link from "next/link";
 import Image from "next/image";
-import Logo from "../../../../public/cypressLogo.svg";
+import logo from "../../../../public/cypressLogo.svg";
 import {
   Form,
   FormControl,
@@ -26,21 +26,23 @@ const LoginPage = () => {
   const router = useRouter();
   const [submitError, setSubmitError] = useState("");
 
-  const form = useForm<z.infer<typeof FormSchema>>({
+  const form = useForm<z.infer<typeof loginFormSchema>>({
     mode: "onChange",
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(loginFormSchema),
     defaultValues: { email: "", password: "" },
   });
 
   const isLoading = form.formState.isSubmitting;
 
-  const onSubmit: SubmitHandler<z.infer<typeof FormSchema>> = async (
+  const onSubmit: SubmitHandler<z.infer<typeof loginFormSchema>> = async (
     formData
   ) => {
+    console.log(formData);
     const { error } = await actionLoginUser(formData);
     if (error) {
       form.reset();
       setSubmitError(error.message);
+      return;
     }
 
     router.replace("/dashboard");
@@ -56,7 +58,7 @@ const LoginPage = () => {
         className="w-full sm:justify-center sm:w-[400px] space-y-6 flex flex-col"
       >
         <Link href="/" className="w-full flex justify-left items-center">
-          <Image src={Logo} alt="cypress logo" width={50} height={50} />
+          <Image src={logo} alt="cypress logo" width={50} height={50} />
           <span className="font-semibold dark:text-white text-4xl first-letter:ml-2">
             Cypress.
           </span>
@@ -68,11 +70,12 @@ const LoginPage = () => {
           disabled={isLoading}
           control={form.control}
           name="email"
-          render={(field) => (
+          render={({ field }) => (
             <FormItem>
               <FormControl>
                 <Input type="email" placeholder="Email" {...field} />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -80,11 +83,12 @@ const LoginPage = () => {
           disabled={isLoading}
           control={form.control}
           name="password"
-          render={(field) => (
+          render={({ field }) => (
             <FormItem>
               <FormControl>
                 <Input type="password" placeholder="Password" {...field} />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />

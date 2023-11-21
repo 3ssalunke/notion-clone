@@ -57,8 +57,8 @@ const components: { title: string; href: string; description: string }[] = [
 const Header = () => {
   const [path, setPath] = useState("#products");
   return (
-    <header>
-      <Link href="/">
+    <header className="p-3 flex justify-center items-center">
+      <Link href="/" className="w-full flex gap-2 justify-left items-center">
         <Image src={Logo} alt="Cypress Logo" width={25} height={25} />
         <span>Cypress.</span>
       </Link>
@@ -120,7 +120,7 @@ const Header = () => {
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuContent>
-              <ul className="grid gap-3 p-4 md:w-[500px] lg:w-[600px] md:grid-cols-2">
+              <ul className="grid gap-3 p-4 w-[400px] md:w-[500px] lg:w-[600px] md:grid-cols-2">
                 {components.map((component) => (
                   <ListItem
                     key={component.title}
@@ -149,7 +149,7 @@ const Header = () => {
       </NavigationMenu>
       <aside className="flex w-full gap-2 justify-end">
         <Link href="/login">
-          <Button className="p-1 hidden sm-block">Login</Button>
+          <Button className="p-1 hidden sm:block">Login</Button>
         </Link>
         <Link href="/signup">
           <Button className="whitespace-nowrap">Sign Up</Button>
