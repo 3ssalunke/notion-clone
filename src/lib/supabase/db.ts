@@ -20,5 +20,5 @@ const migrateDB = async () => {
     console.error("🔴 Error migrating client");
   }
 };
-migrateDB();
+// migrateDB();
 export default db;
