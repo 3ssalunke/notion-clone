@@ -4,8 +4,8 @@ import type { ToastActionElement, ToastProps } from "./toast";
 type ToasterToast = ToastProps & {
   id: string;
   title?: ReactNode;
-  description: ReactNode;
-  action: ToastActionElement;
+  description?: ReactNode;
+  action?: ToastActionElement;
 };
 
 type Toast = Omit<ToasterToast, "id">;
@@ -139,7 +139,7 @@ function toast({ ...props }: Toast) {
       ...props,
       id,
       open: true,
-      onOpenChange: (open) => {
+      onOpenChange: (open: any) => {
         if (!open) dismiss();
       },
     },
