@@ -20,6 +20,9 @@ import { CreateWorkspaceFormSchema } from "@/lib/types";
 import { z } from "zod";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { createWorkspace } from "@/lib/supabase/queries";
+import { useAppState } from "@/lib/providers/state-provider";
+import { useRouter } from "next/router";
+import { useToast } from "../ui/use-toast";
 
 interface DashboardSetupProps {
   subscription: Subscription | null;
@@ -30,8 +33,11 @@ const DashboardSetup: React.FC<DashboardSetupProps> = ({
   subscription,
   user,
 }) => {
+  const router = useRouter();
+  const { toast } = useToast();
   const supabase = createClientComponentClient();
   const [selectedEmoji, setSelectedEmoji] = useState("💼");
+  const { dispatch } = useAppState();
 
   const {
     register,
@@ -62,6 +68,10 @@ const DashboardSetup: React.FC<DashboardSetupProps> = ({
         filePath = data.path;
       } catch (error) {
         console.error("Error", error);
+        toast({
+          variant: "destructive",
+          title: "Error! could not upload your workspace logo",
+        });
       }
     }
 
@@ -80,9 +90,26 @@ const DashboardSetup: React.FC<DashboardSetupProps> = ({
 
       const { error: createError } = await createWorkspace(newWorkspace);
       if (createError) {
+        throw new Error();
       }
+      dispatch({
+        type: "ADD_WORKSPACE",
+        payload: { ...newWorkspace, folders: [] },
+      });
+
+      toast({
+        title: "Workspace Created",
+        description: `${newWorkspace.title} has been created successfully.`,
+      });
+      router.replace(`/dashboard/${newWorkspace.id}`);
     } catch (error) {
       console.error("Error", error);
+      toast({
+        variant: "destructive",
+        title: "Could not create your workspace",
+        description:
+          "Oops! Something went wrong, and we couldn't create your workspace. Try again or come back later.",
+      });
     } finally {
       reset();
     }

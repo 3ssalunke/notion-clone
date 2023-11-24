@@ -1,7 +1,16 @@
 "use client";
 
-import { createContext, useContext, useReducer, Dispatch } from "react";
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  Dispatch,
+  useMemo,
+  useEffect,
+} from "react";
 import { File, Folder, Workspace } from "../supabase/supabase.types";
+import { usePathname } from "next/navigation";
+import { getFiles } from "../supabase/queries";
 
 export type appFolderType = Folder & { files: File[] | [] };
 export type appWorkspaceType = Workspace & {
@@ -45,7 +54,7 @@ type Action =
     }
   | {
       type: "SET_FILES";
-      payload: { workspaceId: string; folderId: string; files: File[] };
+      payload: { workspaceId: string; folderId: string; files: File[] | [] };
     }
   | {
       type: "UPDATE_FOLDER";
@@ -283,12 +292,64 @@ const AppStateContext = createContext<
   | undefined
 >(undefined);
 
-const AppStateProvider = () => {
+interface AppStateProviderProps {
+  children: React.ReactNode;
+}
+
+const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  const pathname = usePathname();
+
+  const workspaceId = useMemo(() => {
+    const urlSegments = pathname.split("/").filter(Boolean);
+    if (urlSegments) {
+      if (urlSegments.length > 1) {
+        return urlSegments[1];
+      }
+    }
+  }, [pathname]);
+
+  const folderId = useMemo(() => {
+    const urlSegments = pathname?.split("/").filter(Boolean);
+    if (urlSegments) {
+      if (urlSegments.length > 2) {
+        return urlSegments[2];
+      }
+    }
+  }, [pathname]);
+
+  const fileId = useMemo(() => {
+    const urlSegments = pathname?.split("/").filter(Boolean);
+    if (urlSegments) {
+      if (urlSegments.length > 3) {
+        return urlSegments[3];
+      }
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!folderId || !workspaceId) return;
+    const fetchFiles = async () => {
+      const { data } = await getFiles(folderId);
+      if (!data) return;
+      dispatch({
+        type: "SET_FILES",
+        payload: { workspaceId, folderId, files: data },
+      });
+    };
+    fetchFiles();
+  }, [folderId, workspaceId]);
+
+  useEffect(() => {
+    console.log("App state changed", state);
+  }, [state]);
+
   return (
     <AppStateContext.Provider
-      value={{ state, dispatch }}
-    ></AppStateContext.Provider>
+      value={{ state, dispatch, workspaceId, folderId, fileId }}
+    >
+      {children}
+    </AppStateContext.Provider>
   );
 };
 
