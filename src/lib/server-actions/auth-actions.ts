@@ -42,6 +42,7 @@ export async function actionSignUpUser({
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}api/auth/callback`,
     },
   });
+  console.log(_data, _error);
   if (_error) {
     return { data: null, error: { message: _error.message } };
   }

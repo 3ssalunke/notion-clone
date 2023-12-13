@@ -21,7 +21,7 @@ import { z } from "zod";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { createWorkspace } from "@/lib/supabase/queries";
 import { useAppState } from "@/lib/providers/state-provider";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
 
 interface DashboardSetupProps {

@@ -1,14 +1,14 @@
 import {
+  integer,
+  jsonb,
   pgTable,
   text,
+  boolean,
   timestamp,
   uuid,
-  jsonb,
-  integer,
-  boolean,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
 import { prices, subscriptionStatus } from "../../../migrations/schema";
+import { sql } from "drizzle-orm";
 
 export const workspaces = pgTable("workspaces", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
@@ -83,19 +83,24 @@ export const subscriptions = pgTable("subscriptions", {
   })
     .default(sql`now()`)
     .notNull(),
-  endedAt: timestamp("ended_at", { withTimezone: true, mode: "string" })
-    .default(sql`now()`)
-    .notNull(),
-  cancelAt: timestamp("cancel_at", { withTimezone: true, mode: "string" })
-    .default(sql`now()`)
-    .notNull(),
-  canceledAt: timestamp("canceled_at", { withTimezone: true, mode: "string" })
-    .default(sql`now()`)
-    .notNull(),
-  trialStart: timestamp("trial_start", { withTimezone: true, mode: "string" })
-    .default(sql`now()`)
-    .notNull(),
-  trialEnd: timestamp("trial_end", { withTimezone: true, mode: "string" })
-    .default(sql`now()`)
-    .notNull(),
+  endedAt: timestamp("ended_at", {
+    withTimezone: true,
+    mode: "string",
+  }).default(sql`now()`),
+  cancelAt: timestamp("cancel_at", {
+    withTimezone: true,
+    mode: "string",
+  }).default(sql`now()`),
+  canceledAt: timestamp("canceled_at", {
+    withTimezone: true,
+    mode: "string",
+  }).default(sql`now()`),
+  trialStart: timestamp("trial_start", {
+    withTimezone: true,
+    mode: "string",
+  }).default(sql`now()`),
+  trialEnd: timestamp("trial_end", {
+    withTimezone: true,
+    mode: "string",
+  }).default(sql`now()`),
 });

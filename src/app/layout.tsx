@@ -5,6 +5,7 @@ import { DM_Sans } from "next/font/google";
 import { twMerge } from "tailwind-merge";
 import AppStateProvider from "@/lib/providers/state-provider";
 import { Toaster } from "@/components/ui/toaster";
+import "@/lib/supabase/db";
 
 const dmsans = DM_Sans({ subsets: ["latin"] });
 
