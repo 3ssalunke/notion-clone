@@ -1,9 +1,10 @@
 "use server";
 import { validate } from "uuid";
-import { files, workspaces } from "../../../migrations/schema";
+import { files, users, workspaces } from "../../../migrations/schema";
 import db from "./db";
 import { File, Subscription, Workspace } from "./supabase.types";
-import { eq } from "drizzle-orm";
+import { and, eq, notExists } from "drizzle-orm";
+import { collaborators } from "./schema";
 
 export const getUserSubscriptionStatus = async (userId: string) => {
   try {
@@ -42,4 +43,75 @@ export const getFiles = async (folderId: string) => {
     console.error(error);
     return { data: null, error: error };
   }
+};
+
+export const getPrivateWorkspaces = async (userId: string) => {
+  if (!userId) return [];
+  const privateWorkspaces = (await db
+    .select({
+      id: workspaces.id,
+      createdAt: workspaces.createdAt,
+      workspaceOwner: workspaces.workspaceOwner,
+      title: workspaces.title,
+      iconId: workspaces.iconId,
+      data: workspaces.data,
+      inTrash: workspaces.inTrash,
+      logo: workspaces.logo,
+      bannerUrl: workspaces.bannerUrl,
+    })
+    .from(workspaces)
+    .where(
+      and(
+        notExists(
+          db
+            .select()
+            .from(collaborators)
+            .where(eq(collaborators.workspaceId, workspaces.id))
+        ),
+        eq(workspaces.workspaceOwner, userId)
+      )
+    )) as Workspace[];
+  return privateWorkspaces;
+};
+
+export const getCollaboratingWorkspaces = async (userId: string) => {
+  if (!userId) return [];
+  const collaboratingWorkspaces = (await db
+    .select({
+      id: workspaces.id,
+      createdAt: workspaces.createdAt,
+      workspaceOwner: workspaces.workspaceOwner,
+      title: workspaces.title,
+      iconId: workspaces.iconId,
+      data: workspaces.data,
+      inTrash: workspaces.inTrash,
+      logo: workspaces.logo,
+      bannerUrl: workspaces.bannerUrl,
+    })
+    .from(users)
+    .innerJoin(collaborators, eq(users.id, collaborators.userId))
+    .innerJoin(workspaces, eq(collaborators.workspaceId, workspaces.id))
+    .where(eq(users.id, userId))) as Workspace[];
+  return collaboratingWorkspaces;
+};
+
+export const getSharedWorkspaces = async (userId: string) => {
+  if (!userId) return [];
+  const sharedWorkspaces = (await db
+    .select({
+      id: workspaces.id,
+      createdAt: workspaces.createdAt,
+      workspaceOwner: workspaces.workspaceOwner,
+      title: workspaces.title,
+      iconId: workspaces.iconId,
+      data: workspaces.data,
+      inTrash: workspaces.inTrash,
+      logo: workspaces.logo,
+      bannerUrl: workspaces.bannerUrl,
+    })
+    .from(workspaces)
+    .orderBy(workspaces.createdAt)
+    .innerJoin(collaborators, eq(workspaces.id, collaborators.workspaceId))
+    .where(eq(workspaces.workspaceOwner, userId))) as Workspace[];
+  return sharedWorkspaces;
 };
