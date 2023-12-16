@@ -6,6 +6,7 @@ import { twMerge } from "tailwind-merge";
 import AppStateProvider from "@/lib/providers/state-provider";
 import { Toaster } from "@/components/ui/toaster";
 import "@/lib/supabase/db";
+import { SupabaseUserContextProvider } from "@/lib/providers/supabase-user-provider";
 
 const dmsans = DM_Sans({ subsets: ["latin"] });
 
@@ -29,8 +30,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AppStateProvider>
-            {children}
-            <Toaster />
+            <SupabaseUserContextProvider>
+              {children}
+              <Toaster />
+            </SupabaseUserContextProvider>
           </AppStateProvider>
         </ThemeProvider>
       </body>
