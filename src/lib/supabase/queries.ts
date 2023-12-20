@@ -2,9 +2,9 @@
 import { validate } from "uuid";
 import { files, users, workspaces } from "../../../migrations/schema";
 import db from "./db";
-import { File, Subscription, User, Workspace } from "./supabase.types";
+import { File, Folder, Subscription, User, Workspace } from "./supabase.types";
 import { and, eq, ilike, notExists } from "drizzle-orm";
-import { collaborators } from "./schema";
+import { collaborators, folders } from "./schema";
 
 export const getUserSubscriptionStatus = async (userId: string) => {
   try {
@@ -135,4 +135,69 @@ export const addCollaborators = async (users: User[], workspaceId: string) => {
       await db.insert(collaborators).values({ workspaceId, userId: user.id });
     }
   });
+};
+
+export const getFolders = async (workspaceId: string) => {
+  const isValid = validate(workspaceId);
+  if (!isValid)
+    return {
+      data: null,
+      error: "invalid workspace id",
+    };
+
+  try {
+    const results: Folder[] | [] = await db
+      .select()
+      .from(folders)
+      .orderBy(folders.createdAt)
+      .where(eq(folders.workspaceId, workspaceId));
+    return { data: results, error: null };
+  } catch (error) {
+    return { data: null, error: "Error" };
+  }
+};
+
+export const updateWorkspace = async (
+  workspace: Partial<Workspace>,
+  workspaceId: string
+) => {
+  if (!workspaceId) return;
+  try {
+    await db
+      .update(workspaces)
+      .set(workspace)
+      .where(eq(workspaces.id, workspaceId));
+    return { data: null, error: null };
+  } catch (error) {
+    console.error(`error while updating workspace ${workspaceId}`, error);
+    return { data: null, error: null };
+  }
+};
+
+export const removeCollaborators = async (
+  users: User[],
+  workspaceId: string
+) => {
+  users.forEach(async (user) => {
+    const userExists = await db.query.collaborators.findFirst({
+      where: (u, { eq }) =>
+        and(eq(u.userId, user.id), eq(u.workspaceId, workspaceId)),
+    });
+
+    if (userExists) {
+      await db
+        .delete(collaborators)
+        .where(
+          and(
+            eq(collaborators.workspaceId, workspaceId),
+            eq(collaborators.userId, user.id)
+          )
+        );
+    }
+  });
+};
+
+export const deleteWorkspace = async (workspaceId: string) => {
+  if (!workspaces) return;
+  await db.delete(workspaces).where(eq(workspaces.id, workspaceId));
 };

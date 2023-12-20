@@ -8,8 +8,10 @@ import { ScrollArea } from "../ui/scroll-area";
 import UserCard from "./user-card";
 import {
   getCollaboratingWorkspaces,
+  getFolders,
   getPrivateWorkspaces,
   getSharedWorkspaces,
+  getUserSubscriptionStatus,
 } from "@/lib/supabase/queries";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { twMerge } from "tailwind-merge";
@@ -26,6 +28,12 @@ const Sidebar: React.FC<SidebarProps> = async ({ params, className }) => {
   } = await supabase.auth.getUser();
 
   if (!user) return;
+
+  const { data: subscriptionData, error: subscriptionError } =
+    await getUserSubscriptionStatus(user.id);
+  const { data: foldersData, error: foldersError } = await getFolders(
+    params.workspaceId
+  );
 
   const [privateWorkspaces, collaboratingWorkspaces, sharedWorkspaces] =
     await Promise.all([
@@ -52,8 +60,11 @@ const Sidebar: React.FC<SidebarProps> = async ({ params, className }) => {
             ...sharedWorkspaces,
           ].find((workspace) => workspace.id === params.workspaceId)}
         />
-        <PlanUsage />
-        <NativeNavigation />
+        <PlanUsage
+          foldersLength={foldersData?.length || 0}
+          subscription={subscriptionData}
+        />
+        <NativeNavigation myWorkspaceId={params.workspaceId} />
         <ScrollArea />
         <FolderDropdownList />
         <UserCard />
