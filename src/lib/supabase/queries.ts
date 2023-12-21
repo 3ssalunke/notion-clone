@@ -201,3 +201,22 @@ export const deleteWorkspace = async (workspaceId: string) => {
   if (!workspaces) return;
   await db.delete(workspaces).where(eq(workspaces.id, workspaceId));
 };
+
+export const getActiveProductsWithPrice = async () => {
+  try {
+    const res = await db.query.products.findMany({
+      where: (pro, { eq }) => eq(pro.active, true),
+      with: {
+        prices: {
+          where: (pri: any, { eq }: any) => eq(pri.active, true),
+        },
+      },
+    });
+
+    if (res.length) return { data: res, error: null };
+    return { data: [], error: null };
+  } catch (error) {
+    console.error(error);
+    return { data: [], error };
+  }
+};
