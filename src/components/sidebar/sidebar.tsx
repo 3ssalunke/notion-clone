@@ -66,7 +66,10 @@ const Sidebar: React.FC<SidebarProps> = async ({ params, className }) => {
         />
         <NativeNavigation myWorkspaceId={params.workspaceId} />
         <ScrollArea />
-        <FolderDropdownList />
+        <FolderDropdownList
+          workspaceFolders={foldersData || []}
+          workspaceId={params.workspaceId}
+        />
         <UserCard />
       </div>
     </aside>

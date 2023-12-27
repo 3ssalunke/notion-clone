@@ -61,10 +61,13 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ products }) => {
           </DialogDescription>
           {products.length
             ? products.map((product) => (
-                <div key={product.id}>
+                <div
+                  key={product.id}
+                  className="flex justify-between items-center"
+                >
                   {product.prices?.map((price) => (
                     <React.Fragment key={price.id}>
-                      <b>
+                      <b className="text-3xl text-foreground">
                         {formatPrice(price)} ? <small>{price.interval}</small>
                       </b>
                       <Button
