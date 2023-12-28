@@ -8,6 +8,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import UserCard from "./user-card";
 import {
   getCollaboratingWorkspaces,
+  getFiles,
   getFolders,
   getPrivateWorkspaces,
   getSharedWorkspaces,
@@ -15,6 +16,7 @@ import {
 } from "@/lib/supabase/queries";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { twMerge } from "tailwind-merge";
+import { File } from "@/lib/supabase/supabase.types";
 
 interface SidebarProps {
   params: { workspaceId: string };
@@ -34,6 +36,13 @@ const Sidebar: React.FC<SidebarProps> = async ({ params, className }) => {
   const { data: foldersData, error: foldersError } = await getFolders(
     params.workspaceId
   );
+  let filesData: File[] = [];
+  if (foldersData && foldersData.length > 0) {
+    await foldersData.forEach(async (folder) => {
+      const { data, error } = await getFiles(folder.id);
+      if (!error && data) filesData.push(...data);
+    });
+  }
 
   const [privateWorkspaces, collaboratingWorkspaces, sharedWorkspaces] =
     await Promise.all([
@@ -68,6 +77,7 @@ const Sidebar: React.FC<SidebarProps> = async ({ params, className }) => {
         <ScrollArea />
         <FolderDropdownList
           workspaceFolders={foldersData || []}
+          workspaceFiles={filesData || []}
           workspaceId={params.workspaceId}
         />
         <UserCard />

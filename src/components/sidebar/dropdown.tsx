@@ -16,6 +16,7 @@ import { useToast } from "../ui/use-toast";
 import { useSupabaseUserContext } from "@/lib/providers/supabase-user-provider";
 import { File } from "@/lib/supabase/supabase.types";
 import { v4 } from "uuid";
+import clsx from "clsx";
 
 interface DropdownProps {
   title: string;
@@ -54,7 +55,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       const fileAndFolderId = id.split("folder");
       const stateTitle = state.workspaces
         .find((workspace) => workspace.id === workspaceId)
-        ?.folders.find((folder) => folder.id === id)
+        ?.folders.find((folder) => folder.id === fileAndFolderId[0])
         ?.files.find((file) => file.id === fileAndFolderId[1])?.title;
       if (title === stateTitle || !stateTitle) return title;
       return stateTitle;
@@ -77,6 +78,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   };
 
   const handleFileTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("handleFileTitleChange");
     if (!workspaceId) return;
     const fid = id.split("folder");
     if (fid.length === 2 && fid[1]) {
@@ -116,6 +118,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 
     if (fid.length === 2 && fid[1]) {
       if (!fileTitle) return;
+
       const { error } = await updateFile({ title }, fid[1]);
       if (error) {
         toast({
@@ -259,20 +262,58 @@ const Dropdown: React.FC<DropdownProps> = ({
     }
   };
 
+  const isFolder = listType === "folder";
+  const groupIdentifies = clsx(
+    "dark:text-white whitespace-nowrap flex justify-between items-center w-full relative",
+    {
+      "group/folder": isFolder,
+      "group/file": !isFolder,
+    }
+  );
+  const listStyles = useMemo(
+    () =>
+      clsx("relative", {
+        "border-none text-md": isFolder,
+        "border-none ml-6 text-[16px] py-1": !isFolder,
+      }),
+    [isFolder]
+  );
+  const hoverStyles = useMemo(
+    () =>
+      clsx("h-full rounded-sm absolute right-0 items-center justify-center", {
+        "group-hover/file:block": listType === "file",
+        "group-hover/folder:block": listType === "folder",
+      }),
+    [listType]
+  );
+  const inputStyles = useMemo(
+    () =>
+      clsx("outline-none overflow-hidden w-[140px] text-Neutrals/neutrals-7", {
+        "bg-muted cursor-text": isEditing,
+        "bg-transparent cursor-pointer": !isEditing,
+      }),
+    [isEditing]
+  );
+
   return (
-    <AccordionItem value={id}>
-      <AccordionTrigger id={listType} disabled={listType === "file"}>
-        <div>
-          <div>
-            <div>
+    <AccordionItem value={id} className={listStyles}>
+      <AccordionTrigger
+        id={listType}
+        disabled={listType === "file"}
+        className="hover:no-underline p-2 dark:text-muted-foreground text-sm"
+      >
+        <div className={groupIdentifies}>
+          <div className="flex gap-4 items-center justify-center overflow-hidden">
+            <div className="relative">
               <EmojiPicker getValue={handleChangeEmoji}>{iconId}</EmojiPicker>
             </div>
             <Input
               type="text"
               value={listType === "folder" ? folderTitle : fileTitle}
               readOnly={!isEditing}
+              className={inputStyles}
               onDoubleClick={handleDoubleClick}
-              onClick={handleBlur}
+              onBlur={handleBlur}
               onChange={
                 listType === "folder"
                   ? handleFolderTitleChange
@@ -280,13 +321,21 @@ const Dropdown: React.FC<DropdownProps> = ({
               }
             />
           </div>
-          <div>
+          <div className={hoverStyles}>
             <TooltipComponent message="Delete Folder">
-              <Trash onClick={moveToTrash} />
+              <Trash
+                onClick={moveToTrash}
+                size={15}
+                className="hover:dark:text-white dark:text-Neutrals/neutrals-7 transition-colors"
+              />
             </TooltipComponent>
             {listType === "folder" && !isEditing && (
               <TooltipComponent message="Add File">
-                <PlusIcon onClick={addNewFile} />
+                <PlusIcon
+                  onClick={addNewFile}
+                  size={15}
+                  className="hover:dark:text-white dark:text-Neutrals/neutrals-7 transition-colors"
+                />
               </TooltipComponent>
             )}
           </div>
@@ -298,7 +347,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           ?.folders.find((folder) => folder.id === id)
           ?.files.filter((file) => !file.inTrash)
           .map((file) => {
-            const customFileId = `${id}folders${file.id}`;
+            const customFileId = `${id}folder${file.id}`;
             return (
               <Dropdown
                 key={file.id}

@@ -253,3 +253,13 @@ export const createFile = async (file: File) => {
     return { data: null, error: "Error" };
   }
 };
+
+export const createFolder = async (folder: Folder) => {
+  try {
+    await db.insert(folders).values(folder);
+    return { data: null, error: null };
+  } catch (error) {
+    console.error("error inserting folder", error);
+    return { data: null, error: "Error" };
+  }
+};
