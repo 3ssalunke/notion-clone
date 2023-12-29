@@ -74,13 +74,15 @@ const Sidebar: React.FC<SidebarProps> = async ({ params, className }) => {
           subscription={subscriptionData}
         />
         <NativeNavigation myWorkspaceId={params.workspaceId} />
-        <ScrollArea />
-        <FolderDropdownList
-          workspaceFolders={foldersData || []}
-          workspaceFiles={filesData || []}
-          workspaceId={params.workspaceId}
-        />
-        <UserCard />
+        <ScrollArea className="overflow-scroll relative h-[350px] ql-toolbar">
+          <div className="pointer-events-none w-full absolute bottom-0 h-20 bg-gradient-to-t from-background to-transparent z-40" />
+          <FolderDropdownList
+            workspaceFolders={foldersData || []}
+            workspaceFiles={filesData || []}
+            workspaceId={params.workspaceId}
+          />
+        </ScrollArea>
+        <UserCard subscription={subscriptionData} />
       </div>
     </aside>
   );
