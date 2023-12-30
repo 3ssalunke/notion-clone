@@ -263,3 +263,96 @@ export const createFolder = async (folder: Folder) => {
     return { data: null, error: "Error" };
   }
 };
+
+export const deleteFile = async (fileId: string) => {
+  if (!fileId) return;
+  try {
+    await db.delete(files).where(eq(files.id, fileId));
+  } catch (error) {
+    console.error("error deleting file", fileId, error);
+  }
+};
+
+export const deleteFolder = async (folderId: string) => {
+  if (!folderId) return;
+  try {
+    await db.delete(folders).where(eq(files.id, folderId));
+  } catch (error) {
+    console.error("error deleting folder", folderId, error);
+  }
+};
+
+export const getWorkspaceDetails = async (workspaceId: string) => {
+  const isValid = validate(workspaceId);
+  if (!isValid) {
+    return {
+      data: [],
+      error: "Error",
+    };
+  }
+
+  try {
+    const response = (await db
+      .select()
+      .from(workspaces)
+      .where(eq(workspaces.id, workspaceId))
+      .limit(1)) as Workspace[];
+    return { data: response, error: null };
+  } catch (error) {
+    console.error("error fetching workspace details", workspaceId, error);
+    return {
+      data: [],
+      error: "Error",
+    };
+  }
+};
+
+export const getFileDetails = async (fileId: string) => {
+  const isValid = validate(fileId);
+  if (!isValid) {
+    return {
+      data: [] as File[],
+      error: "Error",
+    };
+  }
+
+  try {
+    const response = (await db
+      .select()
+      .from(files)
+      .where(eq(files.id, fileId))
+      .limit(1)) as File[];
+    return { data: response, error: null };
+  } catch (error) {
+    console.log("error fetching file details", fileId, error);
+    return {
+      data: [] as File[],
+      error: "Error",
+    };
+  }
+};
+
+export const getFolderDetails = async (folderId: string) => {
+  const isValid = validate(folderId);
+  if (!isValid) {
+    return {
+      data: [] as Folder[],
+      error: "Error",
+    };
+  }
+
+  try {
+    const response = (await db
+      .select()
+      .from(folders)
+      .where(eq(files.id, folderId))
+      .limit(1)) as Folder[];
+    return { data: response, error: null };
+  } catch (error) {
+    console.log("error fetching folder details", folderId, error);
+    return {
+      data: [] as Folder[],
+      error: "Error",
+    };
+  }
+};

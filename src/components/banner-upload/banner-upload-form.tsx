@@ -1,0 +1,116 @@
+import React from "react";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { z } from "zod";
+import { UploadBannerFormSchema } from "@/lib/types";
+import Loader from "../global/loader";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useAppState } from "@/lib/providers/state-provider";
+import {
+  updateFile,
+  updateFolder,
+  updateWorkspace,
+} from "@/lib/supabase/queries";
+
+interface BannerUploadProps {
+  dirType: "workspace" | "folder" | "file";
+  id: string;
+}
+
+const BannerUploadForm: React.FC<BannerUploadProps> = ({ dirType, id }) => {
+  const supabase = createClientComponentClient();
+  const { workspaceId, folderId, dispatch } = useAppState();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting: isUploading, errors },
+  } = useForm<z.infer<typeof UploadBannerFormSchema>>({
+    mode: "onChange",
+    defaultValues: {
+      banner: "",
+    },
+  });
+
+  const onSubmitHandler: SubmitHandler<
+    z.infer<typeof UploadBannerFormSchema>
+  > = async (values) => {
+    const file = values.banner?.[0];
+    if (!file || !id) return;
+    try {
+      let filePath = null;
+      const uploadBanner = async () => {
+        const { data, error } = await supabase.storage
+          .from("file-banners")
+          .upload(`banner-${id}`, file, { cacheControl: "5", upsert: true });
+        if (error) throw new Error();
+        filePath = data.path;
+      };
+      if (dirType === "file") {
+        if (!workspaceId || !folderId) return;
+        await uploadBanner();
+        dispatch({
+          type: "UPDATE_FILE",
+          payload: {
+            workspaceId,
+            folderId,
+            fileId: id,
+            file: { bannerUrl: filePath },
+          },
+        });
+        await updateFile({ bannerUrl: filePath }, id);
+      } else if (dirType === "folder") {
+        if (!workspaceId || !folderId) return;
+        await uploadBanner();
+        dispatch({
+          type: "UPDATE_FOLDER",
+          payload: {
+            folderId: id,
+            workspaceId,
+            folder: { bannerUrl: filePath },
+          },
+        });
+        await updateFolder({ bannerUrl: filePath }, id);
+      } else if (dirType === "workspace") {
+        if (!workspaceId) return;
+        await uploadBanner();
+        dispatch({
+          type: "UPDATE_WORKSPACE",
+          payload: {
+            workspaceId,
+            workspace: { bannerUrl: filePath },
+          },
+        });
+        await updateWorkspace({ bannerUrl: filePath }, id);
+      }
+    } catch (error) {}
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit(onSubmitHandler)}
+      className="flex flex-col gap-2"
+    >
+      <Label className="text-sm text-muted-foreground" htmlFor="bannerImage">
+        Banner Image
+      </Label>
+      <Input
+        type="file"
+        id="bannerImage"
+        accept="image/*"
+        disabled={isUploading}
+        {...register("banner", { required: "Banner Image is required" })}
+      />
+      <small className="text-red-600">
+        {errors.banner?.message?.toString()}
+      </small>
+      <Button type="submit" disabled={isUploading}>
+        {!isUploading ? "Upload Banner" : <Loader />}
+      </Button>
+    </form>
+  );
+};
+
+export default BannerUploadForm;

@@ -7,7 +7,6 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import EmojiPicker from "../global/emoji-picker";
-import { Input } from "../ui/input";
 import TooltipComponent from "../global/tooltip-component";
 import { PlusIcon, Trash } from "lucide-react";
 import { useAppState } from "@/lib/providers/state-provider";
@@ -280,10 +279,13 @@ const Dropdown: React.FC<DropdownProps> = ({
   );
   const hoverStyles = useMemo(
     () =>
-      clsx("h-full rounded-sm absolute right-0 items-center justify-center", {
-        "group-hover/file:block": listType === "file",
-        "group-hover/folder:block": listType === "folder",
-      }),
+      clsx(
+        "h-full hidden rounded-sm absolute right-0 items-center justify-center",
+        {
+          "group-hover/file:block": listType === "file",
+          "group-hover/folder:block": listType === "folder",
+        }
+      ),
     [listType]
   );
   const inputStyles = useMemo(
@@ -307,7 +309,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             <div className="relative">
               <EmojiPicker getValue={handleChangeEmoji}>{iconId}</EmojiPicker>
             </div>
-            <Input
+            <input
               type="text"
               value={listType === "folder" ? folderTitle : fileTitle}
               readOnly={!isEditing}
