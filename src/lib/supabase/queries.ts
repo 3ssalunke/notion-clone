@@ -356,3 +356,9 @@ export const getFolderDetails = async (folderId: string) => {
     };
   }
 };
+
+export const findUser = async (userId: string) => {
+  return db.query.users.findFirst({
+    where: (u, { eq }) => eq(u.id, userId),
+  });
+};

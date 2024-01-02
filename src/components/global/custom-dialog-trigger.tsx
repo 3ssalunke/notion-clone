@@ -7,6 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import clsx from "clsx";
 
 interface CustomDialogTriggerProps {
   header?: string;
@@ -25,7 +26,7 @@ const CustomDialogTrigger: React.FC<CustomDialogTriggerProps> = ({
 }) => {
   return (
     <Dialog>
-      <DialogTrigger>{children}</DialogTrigger>
+      <DialogTrigger className={clsx("", className)}>{children}</DialogTrigger>
       <DialogContent className="h-screen block sm:h-[440px] overflow-scroll w-full no-scroll">
         <DialogHeader>
           <DialogTitle>{header}</DialogTitle>
